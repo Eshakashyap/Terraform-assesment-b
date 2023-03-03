@@ -1,9 +1,8 @@
 provider "aws" {
-  region = "us-east-1a"
+  region = "us-east-1"
+  
 }
-
-
-# VPC
+#VPC
 resource "aws_vpc" "vpc" {
   cidr_block = "10.0.0.0/16"
 }
@@ -25,13 +24,18 @@ resource "aws_nat_gateway" "nat_gateway" {
   subnet_id     = aws_subnet.public_subnet.id
 }
 
-#Elastic IP for NAT Gateway
+#internet gateway
+resource "aws_internet_gateway" "gw" {
+  vpc_id = aws_vpc.vpc.id
+  
+}
+#elastic IP for NAT Gateway
 resource "aws_eip" "nat_eip" {
   vpc = true
 }
 
 
-#Route Table for Public Subnet
+#route Table for Public Subnet
 resource "aws_route_table" "public_rt" {
   vpc_id = aws_vpc.vpc.id
 
@@ -51,7 +55,7 @@ resource "aws_route_table_association" "public_rta" {
 }
 
 
-#Route Table for Private Subnet
+#route Table for Private Subnet
 resource "aws_route_table" "private_rt" {
   vpc_id = aws_vpc.vpc.id
 
@@ -64,14 +68,14 @@ resource "aws_route_table" "private_rt" {
     Name = "Private RT"
   }
 }
-#Associate Private Route Table to Private Subnet
+#associate Private Route Table to Private Subnet
 resource "aws_route_table_association" "private_rta" {
   subnet_id      = aws_subnet.private_subnet.id
   route_table_id = aws_route_table.private_rt.id
 }
 
 
-#Security Group VM
+#security Group VM
 resource "aws_security_group" "vm_sg" {
   name_prefix = "vm-sg"
   vpc_id      = aws_vpc.vpc.id
